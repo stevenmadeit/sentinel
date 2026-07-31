@@ -46,8 +46,13 @@ function parseAISummary(summary: string) {
   return result;
 }
 
-export default async function IncidentDetail({ params }: { params: { id: string } }) {
-  const incident = await fetchIncident(params.id);
+export default async function IncidentDetail({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const incident = await fetchIncident(id);
   if (!incident) {
     notFound();
   }
