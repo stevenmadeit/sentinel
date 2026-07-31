@@ -19,6 +19,7 @@ class Incident(Base):
     resolved_at = Column(DateTime, nullable=True)
     ai_summary = Column(Text, nullable=True)
     likely_commit = Column(String(100), nullable=True)
+    slack_message = Column(Text, nullable=True)
     postmortem = Column(Text, nullable=True)
 
 
