@@ -226,14 +226,19 @@ def _parse_ai_response(response_text: str) -> dict[str, str]:
             "fix": str(parsed.get("fix", "Unknown")).strip(),
         }
 
+    cleaned = response_text.strip()
+    if cleaned.startswith("```"):
+        cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned)
+        cleaned = re.sub(r"\s*```$", "", cleaned)
+
     try:
-        parsed = json.loads(response_text)
+        parsed = json.loads(cleaned)
         if isinstance(parsed, dict):
             return as_dict(parsed)
     except json.JSONDecodeError:
         pass
 
-    json_match = re.search(r"\{.*\}", response_text, flags=re.DOTALL)
+    json_match = re.search(r"\{.*\}", cleaned, flags=re.DOTALL)
     if json_match:
         try:
             parsed = json.loads(json_match.group(0))
@@ -249,12 +254,12 @@ def _parse_ai_response(response_text: str) -> dict[str, str]:
         "fix": r"(?:suggested fix|fix)[:\-]\s*(.+?)(?:\n|$)",
     }
     for key, pattern in patterns.items():
-        match = re.search(pattern, response_text, flags=re.IGNORECASE | re.DOTALL)
+        match = re.search(pattern, cleaned, flags=re.IGNORECASE | re.DOTALL)
         if match:
             result[key] = match.group(1).strip()
 
     return {
-        "cause": result["cause"] or response_text.strip(),
+        "cause": result["cause"] or cleaned.strip() or "Unknown",
         "impact": result["impact"] or "Unknown",
         "fix": result["fix"] or "Unknown",
     }
